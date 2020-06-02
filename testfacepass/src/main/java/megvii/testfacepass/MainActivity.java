@@ -107,9 +107,9 @@ import megvii.testfacepass.utils.FileUtil;
 
 
 public class MainActivity extends Activity implements CameraManager.CameraListener, View.OnClickListener {
-//    private static final String TAG = MainActivity.class.getSimpleName();
+    private static final String TAG = MainActivity.class.getSimpleName();
 
-    private static final String BOARD_REDMI_6_PRO = "msm8953";
+
 
     private enum FacePassSDKMode {
         MODE_ONLINE,
@@ -283,8 +283,9 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
         FacePassHandler.getAuth(authIP, apiKey, apiSecret);
         FacePassHandler.initSDK(getApplicationContext());
         Log.d("FacePassDemo", FacePassHandler.getVersion());
-        Log.d(DEBUG_TAG, "initSDK is available:" + FacePassHandler.isAvailable());
-        Log.d(DEBUG_TAG, "is Authorized:" + FacePassHandler.isAuthorized());
+        Log.d(TAG, "initSDK is available:" + FacePassHandler.isAvailable());
+        Log.d(TAG, "is Authorized:" + FacePassHandler.isAuthorized());
+        Log.d(TAG, "SDK_MODE:" + SDK_MODE);
     }
 
     private void initFaceHandler() {
@@ -369,7 +370,11 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
         initToast();
         /* 打开相机 */
         if (hasPermission()) {
-            manager.open(getWindowManager(), false, cameraWidth, cameraHeight);
+            if (CfgApp.isRedMi6Pro()) {  //适配红米6pro
+                manager.open(getWindowManager(), true, cameraWidth, cameraHeight);
+            } else {
+                manager.open(getWindowManager(), false, cameraWidth, cameraHeight);
+            }
         }
         adaptFrameLayout();
         super.onResume();

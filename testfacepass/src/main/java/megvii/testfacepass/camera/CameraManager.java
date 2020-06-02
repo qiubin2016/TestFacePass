@@ -14,9 +14,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import megvii.testfacepass.CfgApp;
 import megvii.testfacepass.SettingVar;
 
 public class CameraManager implements CameraPreview.CameraPreviewListener {
+    private static final String TAG = CameraManager.class.getSimpleName();
+
     protected boolean front = false;
 
     protected Camera camera = null;
@@ -132,7 +135,7 @@ public class CameraManager implements CameraPreview.CameraPreviewListener {
                 protected Object doInBackground(Object... params) {
                     cameraId = front ? Camera.CameraInfo.CAMERA_FACING_FRONT : Camera.CameraInfo.CAMERA_FACING_BACK;
                     try {
-                        camera = Camera.open(cameraId);
+                        camera = Camera.open(cameraId);  //打开摄像头
                     } catch (Exception e) {
                         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
                         int count = Camera.getNumberOfCameras();
@@ -170,11 +173,14 @@ public class CameraManager implements CameraPreview.CameraPreviewListener {
                         } else {  // back-facing
                             previewRotation = (info.orientation - degrees + 360) % 360;
                         }
-                        previewRotation = 90;
-                        if (SettingVar.isSettingAvailable) {
-                            previewRotation = SettingVar.cameraPreviewRotation;
+                        Log.d(TAG, "degrees:" + degrees + ",previewRotation:" + previewRotation);
+//                        previewRotation = 90;
+                        if (!CfgApp.isSmdt()) {  //适配视美泰rk3288主板
+                            if (SettingVar.isSettingAvailable) {
+                                previewRotation = SettingVar.cameraPreviewRotation;
+                            }
                         }
-
+                        Log.d(TAG, "degrees:" + degrees + ",previewRotation:" + previewRotation);
                         Log.i("CameraManager", String.format("camera rotation: %d %d %d", degrees, info.orientation, previewRotation));
                         camera.setDisplayOrientation(previewRotation);
                         Camera.Parameters param = camera.getParameters();
