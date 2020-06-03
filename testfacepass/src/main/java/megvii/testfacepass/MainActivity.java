@@ -356,6 +356,7 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
                     try {
                         /* 如果SDK初始化未完成则需等待 */
                         sleep(500);
+                        Log.d(TAG, "isAvailable:" + FacePassHandler.isAvailable() + ",isAuthorized:" + FacePassHandler.isAuthorized());
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
