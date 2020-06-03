@@ -295,7 +295,7 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
             public void run() {
                 while (true && !isFinishing()) {
                     while (FacePassHandler.isAvailable()) {
-                        Log.d(DEBUG_TAG, "start to build FacePassHandler");
+                        Log.d(TAG, "start to build FacePassHandler");
                         FacePassConfig config;
                         try {
                             /* 填入所需要的配置 */
@@ -338,7 +338,9 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
                             config.fileRootPath = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
 
                             /* 创建SDK实例 */
+                            Log.d(TAG, "start to new FacePassHandler");
                             mFacePassHandler = new FacePassHandler(config);
+                            Log.d(TAG, "FacePassHandler:" + mFacePassHandler);
                             /* 更新入库阈值 */
                             FacePassConfig addFaceConfig = mFacePassHandler.getAddFaceConfig();
                             addFaceConfig.blurThreshold = 0.6f;
