@@ -373,11 +373,8 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
         initToast();
         /* 打开相机 */
         if (hasPermission()) {
-            if (CfgApp.isRedMi6Pro()) {  //适配红米6pro
-                manager.open(getWindowManager(), true, cameraWidth, cameraHeight);
-            } else {
-                manager.open(getWindowManager(), false, cameraWidth, cameraHeight);
-            }
+//            manager.open(getWindowManager(), false, cameraWidth, cameraHeight);
+            manager.open(getWindowManager(), cameraFacingFront, cameraWidth, cameraHeight);  //适配
         }
         adaptFrameLayout();
         super.onResume();
@@ -731,11 +728,12 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
         SettingVar.faceRotation = preferences.getInt("faceRotation", SettingVar.faceRotation);
         SettingVar.cameraPreviewRotation = preferences.getInt("cameraPreviewRotation", SettingVar.cameraPreviewRotation);
         SettingVar.cameraFacingFront = preferences.getBoolean("cameraFacingFront", SettingVar.cameraFacingFront);
-        if (SettingVar.isSettingAvailable) {
-            cameraRotation = SettingVar.faceRotation;
-            cameraFacingFront = SettingVar.cameraFacingFront;
+        if (!CfgApp.isRedMi6Pro()) {  //适配红米6Pro
+            if (SettingVar.isSettingAvailable) {
+                cameraRotation = SettingVar.faceRotation;
+                cameraFacingFront = SettingVar.cameraFacingFront;
+            }
         }
-
 
         Log.i(DEBUG_TAG, "Rotation: screenRotation: " + String.valueOf(windowRotation));
         Log.i(DEBUG_TAG, "Rotation: faceRotation: " +  SettingVar.faceRotation);
