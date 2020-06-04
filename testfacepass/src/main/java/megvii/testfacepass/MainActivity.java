@@ -722,13 +722,16 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
         }
         Log.i(DEBUG_TAG, "Rotation: cameraRation: " + cameraRotation);
         cameraFacingFront = true;
+        if (CfgApp.isSmdt()) {
+            cameraFacingFront = false;  //视美泰rk3288主板，front:IR, back:RGB
+        }
         SharedPreferences preferences = getSharedPreferences(SettingVar.SharedPrefrence, Context.MODE_PRIVATE);
         SettingVar.isSettingAvailable = preferences.getBoolean("isSettingAvailable", SettingVar.isSettingAvailable);
         SettingVar.isCross = preferences.getBoolean("isCross", SettingVar.isCross);
         SettingVar.faceRotation = preferences.getInt("faceRotation", SettingVar.faceRotation);
         SettingVar.cameraPreviewRotation = preferences.getInt("cameraPreviewRotation", SettingVar.cameraPreviewRotation);
         SettingVar.cameraFacingFront = preferences.getBoolean("cameraFacingFront", SettingVar.cameraFacingFront);
-        if (!CfgApp.isRedMi6Pro()) {  //适配红米6Pro
+        if (!CfgApp.isRedMi6Pro() && !CfgApp.isSmdt()) {  //适配红米6Pro和视美泰rk3288主板
             if (SettingVar.isSettingAvailable) {
                 cameraRotation = SettingVar.faceRotation;
                 cameraFacingFront = SettingVar.cameraFacingFront;
