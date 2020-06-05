@@ -2,6 +2,7 @@ package megvii.testfacepass;
 
 import android.app.Application;
 import android.os.Build;
+import android.util.Log;
 
 public class CfgApp extends Application {
     private static final String TAG = CfgApp.class.getSimpleName();
@@ -21,6 +22,7 @@ public class CfgApp extends Application {
         } else if (BOARD_REDMI_6_PRO.equals(Build.BOARD)) {
             isRedMi6Pro = true;
         }
+        Log.i(TAG, "board is " + Build.BOARD);
     }
 
     public static boolean isSmdt() {
