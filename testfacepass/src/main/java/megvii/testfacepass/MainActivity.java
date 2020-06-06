@@ -280,8 +280,8 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
     }
 
     private void initFacePassSDK() {
-        FacePassHandler.getAuth(authIP, apiKey, apiSecret);
-        FacePassHandler.initSDK(getApplicationContext());
+        FacePassHandler.getAuth(authIP, apiKey, apiSecret);  //获取授权
+        FacePassHandler.initSDK(getApplicationContext());  //初始化sdk
         Log.d("FacePassDemo", FacePassHandler.getVersion());
         Log.d(TAG, "initSDK is available:" + FacePassHandler.isAvailable());
         Log.d(TAG, "is Authorized:" + FacePassHandler.isAuthorized());
@@ -330,7 +330,8 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
                             config.lowBrightnessThreshold = 70f;
                             config.highBrightnessThreshold = 210f;
                             config.brightnessSTDThreshold = 60f;
-                            config.retryCount = 100;
+//                            config.retryCount = 100;
+                            config.retryCount = 2;
                             config.smileEnabled = false;
                             config.maxFaceEnabled = true;
 
@@ -369,7 +370,7 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
 
     @Override
     protected void onResume() {
-        checkGroup();
+        checkGroup();  //检查底库
         initToast();
         /* 打开相机 */
         if (hasPermission()) {
@@ -415,8 +416,8 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
     /* 相机回调函数 */
     @Override
     public void onPictureTaken(CameraPreviewData cameraPreviewData) {
-        mFeedFrameQueue.offer(cameraPreviewData);
-        Log.i(DEBUG_TAG, "feedframe");
+        boolean result = mFeedFrameQueue.offer(cameraPreviewData);
+        Log.i(DEBUG_TAG, "feedframe:" + result);
     }
 
     private class FeedFrameThread extends Thread {
@@ -426,7 +427,7 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
             while (!isInterrupt) {
                 CameraPreviewData cameraPreviewData = null;
                 try {
-                    cameraPreviewData = mFeedFrameQueue.take();
+                    cameraPreviewData = mFeedFrameQueue.take();  //若无数据则阻塞等待
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                     continue;
@@ -534,10 +535,8 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
                 } else {
                     /*离线模式，将识别到人脸的，message不为空的result添加到处理队列中*/
                     if (detectionResult != null && detectionResult.message.length != 0) {
-                        Log.d(DEBUG_TAG, "mDetectResultQueue.offer");
-
-
-                        mDetectResultQueue.offer(detectionResult.message);
+                        boolean result = mDetectResultQueue.offer(detectionResult.message);
+                        Log.d(DEBUG_TAG, "mDetectResultQueue.offer:" + result);
                     }
                 }
                 long endTime = System.currentTimeMillis(); //结束时间
@@ -573,7 +572,7 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
         public void run() {
             while (!isInterrupt) {
                 try {
-                    byte[] detectionResult = mDetectResultQueue.take();
+                    byte[] detectionResult = mDetectResultQueue.take();  //若无数据则阻塞等待
                     FacePassAgeGenderResult[] ageGenderResult = null;
                     //if (ageGenderEnabledGlobal) {
                     //    ageGenderResult = mFacePassHandler.getAgeGender(detectionResult);
@@ -588,16 +587,21 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
 
                         FacePassRecognitionResult[] recognizeResult = mFacePassHandler.recognize(group_name, detectionResult);
                         if (recognizeResult != null && recognizeResult.length > 0) {
+                            Log.d("test1", "================1");
                             for (FacePassRecognitionResult result : recognizeResult) {
+                                Log.d("test1", "================2");
                                 String faceToken = new String(result.faceToken);
                                 if (FacePassRecognitionResultType.RECOG_OK == result.facePassRecognitionResultType) {
+                                    Log.d("test1", "================3");
                                     getFaceImageByFaceToken(result.trackId, faceToken);
                                 }
                                 int idx = findidx(ageGenderResult, result.trackId);
                                 if (idx == -1) {
+                                    Log.d("test1", "================4");
                                     showRecognizeResult(result.trackId, result.detail.searchScore, result.detail.livenessScore, !TextUtils.isEmpty(faceToken));
                                 }
                                 else {
+                                    Log.d("test1", "================5");
                                     showRecognizeResult(result.trackId, result.detail.searchScore, result.detail.livenessScore, !TextUtils.isEmpty(faceToken), ageGenderResult[idx].age, ageGenderResult[idx].gender);
                                 }
                             }
@@ -627,11 +631,12 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
                 faceEndTextView.append("识别分 = " + searchScore + "\n");
                 faceEndTextView.append("活体分 = " + livenessScore + "\n");
                 scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+                Log.d("test1", "faceEndTextView:" + faceEndTextView.getText());
             }
         });
 
     }
-
+    //显示识别结果
     private void showRecognizeResult(final long trackId, final float searchScore, final float livenessScore, final boolean isRecognizeOK, final float age, final int gender) {
         mAndroidHandler.post(new Runnable() {
             @Override
@@ -648,6 +653,7 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
                     faceEndTextView.append("性别 = " + "unknown" + "\n");
                 }
                 scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+                Log.d("test1", "faceEndTextView:" + faceEndTextView);
             }
         });
 
@@ -720,7 +726,7 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
         } else {
             cameraRotation = FacePassImageRotation.DEG270;
         }
-        Log.i(DEBUG_TAG, "Rotation: cameraRation: " + cameraRotation);
+        Log.i(DEBUG_TAG, "Rotation: cameraRation: " + cameraRotation);  //90
         cameraFacingFront = true;
         if (CfgApp.isSmdt()) {
             cameraFacingFront = false;  //视美泰rk3288主板，front:IR, back:RGB
@@ -796,21 +802,21 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
         visible.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (buttonFlag == 0) {
-                    ll.setVisibility(View.VISIBLE);
-                    if (mCurrentOrientation == Configuration.ORIENTATION_PORTRAIT) {
-                        visible.setBackgroundResource(R.drawable.down);
-                    } else if (mCurrentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
-                        visible.setBackgroundResource(R.drawable.right);
+                if (buttonFlag == 0) {  //显示debug日志框
+                    ll.setVisibility(View.VISIBLE);  //显示debug日志框视图
+                    if (mCurrentOrientation == Configuration.ORIENTATION_PORTRAIT) {  //竖屏
+                        visible.setBackgroundResource(R.drawable.down);  //debug图标更换为"V"
+                    } else if (mCurrentOrientation == Configuration.ORIENTATION_LANDSCAPE) {  //横屏
+                        visible.setBackgroundResource(R.drawable.right);  //debug图标更换为">"
                     }
                     buttonFlag = 1;
-                } else if (buttonFlag == 1) {
+                } else if (buttonFlag == 1) {  //恢复成debug图标
                     buttonFlag = 0;
                     if (SettingVar.isButtonInvisible)
                         ll.setVisibility(View.INVISIBLE);
                     else
                         ll.setVisibility(View.GONE);
-                    visible.setBackgroundResource(R.drawable.debug);
+                    visible.setBackgroundResource(R.drawable.debug);  //显示debug图标
                 }
 
             }
@@ -822,7 +828,7 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
         /* 注册相机回调函数 */
         manager.setListener(this);
 
-        mSDKModeBtn=(Button)findViewById(R.id.btn_mode_switch);
+        mSDKModeBtn=(Button)findViewById(R.id.btn_mode_switch);  //离线/在线模式切换按钮
         mSDKModeBtn.setText(SDK_MODE.toString());
         mSDKModeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -887,8 +893,9 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
         super.onDestroy();
     }
 
-
+    //将识别到的人脸在预览界面中圈出，并在上方显示人脸位置及角度信息
     private void showFacePassFace(FacePassFace[] detectResult) {
+//        Log.d(DEBUG_TAG, "FacePassFace[] length:" + detectResult.length);
         faceView.clear();
         for (FacePassFace face : detectResult) {
             Log.d("facefacelist", "width " + (face.rect.right - face.rect.left) + " height " + (face.rect.bottom - face.rect.top) );
@@ -909,12 +916,13 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
             StringBuilder smileString = new StringBuilder();
             smileString.append("微笑: ").append(String.format("%.6f", face.smile));
             Matrix mat = new Matrix();
-            int w = cameraView.getMeasuredWidth();
-            int h = cameraView.getMeasuredHeight();
+            int w = cameraView.getMeasuredWidth();  //800
+            int h = cameraView.getMeasuredHeight();  //1280
 
-            int cameraHeight = manager.getCameraheight();
-            int cameraWidth = manager.getCameraWidth();
-
+            int cameraHeight = manager.getCameraheight();  //720 cameraWidth
+            int cameraWidth = manager.getCameraWidth();  //1280 cameraHeight
+            Log.d("facefacelist", "w:" + w + ",h:" + h + ",Height:" + cameraHeight + ",Width:" + cameraWidth
+                    + ",cameraRotation:" + cameraRotation);
             float left = 0;
             float top = 0;
             float right = 0;
@@ -961,12 +969,12 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
 
             mat.mapRect(drect, srect);
             faceView.addRect(drect);
-            faceView.addId(faceIdString.toString());
-            faceView.addRoll(faceRollString.toString());
-            faceView.addPitch(facePitchString.toString());
-            faceView.addYaw(faceYawString.toString());
-            faceView.addBlur(faceBlurString.toString());
-            faceView.addSmile(smileString.toString());
+            faceView.addId(faceIdString.toString());        //ID
+            faceView.addRoll(faceRollString.toString());    //左右
+            faceView.addPitch(facePitchString.toString());  //上下
+            faceView.addYaw(faceYawString.toString());      //旋转
+            faceView.addBlur(faceBlurString.toString());    //模糊
+            faceView.addSmile(smileString.toString());      //微笑
         }
         faceView.invalidate();
     }
@@ -1062,26 +1070,29 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
         if (TextUtils.isEmpty(faceToken)) {
             return;
         }
-
+        Log.d("test1", "================11");
         final String faceUrl = "http://" + serverIP + ":8080/api/image/v1/query?face_token=" + faceToken;
 
         final Bitmap cacheBmp = mImageCache.getBitmap(faceUrl);
-        if (cacheBmp != null) {
+        if (cacheBmp != null) {Log.d("test1", "================12");
             mAndroidHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     Log.i(DEBUG_TAG, "getFaceImageByFaceToken cache not null");
+                    Log.i("test1", "getFaceImageByFaceToken cache not null");
                     showToast("ID = " + String.valueOf(trackId), Toast.LENGTH_SHORT, true, cacheBmp);
                 }
             });
             return;
-        } else {
+        } else {Log.d("test1", "================13");
             try {
                 final Bitmap bitmap = mFacePassHandler.getFaceImage(faceToken.getBytes());
                 mAndroidHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         Log.i(DEBUG_TAG, "getFaceImageByFaceToken cache is null");
+                        Log.i("test1", "getFaceImageByFaceToken cache is null");
+                        //显示底库中查找到匹配的人脸小图
                         showToast("ID = " + String.valueOf(trackId), Toast.LENGTH_SHORT, true, bitmap);
                     }
                 });
@@ -1095,7 +1106,7 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
 
         ByteRequest request = new ByteRequest(Request.Method.GET, faceUrl, new Response.Listener<byte[]>() {
             @Override
-            public void onResponse(byte[] response) {
+            public void onResponse(byte[] response) {Log.d("test1", "================14");
 
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inJustDecodeBounds = false;
@@ -1108,10 +1119,12 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.i(DEBUG_TAG, "image load failed ! ");
+                Log.i("test1", "image load failed ! ");
             }
         });
         request.setTag("load_image_request_tag");
         requestQueue.add(request);
+        Log.d("test1", "================15");
     }
 
 
