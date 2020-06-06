@@ -308,6 +308,11 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
                             //config.livenessModel = FacePassModel.initModel(getApplicationContext().getAssets(), "liveness.3288GPU.rgb.C.bin");
                             //config.livenessGPUCache = FacePassModel.initModel(getApplicationContext().getAssets(), "liveness.GPU.AlgoPolicy.C.cache");
 
+                            if (CfgApp.isSmdt()) {  //双目
+                                //rgb-ir CPU活体模型
+                                config.rgbIrLivenessModel = FacePassModel.initModel(getApplicationContext().getAssets(), "liveness.3288CPU.rgbir.int8.C.bin");
+                            }
+
                             config.searchModel = FacePassModel.initModel(getApplicationContext().getAssets(), "feat2.arm.F.v1.0.1core.bin");
                             config.detectModel = FacePassModel.initModel(getApplicationContext().getAssets(), "detector.arm.C.bin");
                             config.detectRectModel = FacePassModel.initModel(getApplicationContext().getAssets(), "detector_rect.arm.C.bin");
@@ -323,6 +328,10 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
                             config.searchThreshold = 72.45f;
                             config.livenessThreshold = 60f;
                             config.livenessEnabled = true;
+//                            if (CfgApp.isSmdt()) {  //双目
+//                                config.livenessEnabled = false;  //禁止单目活体
+//                                config.rgbIrLivenessEnabled = true;  //使能双目活体
+//                            }
                             ageGenderEnabledGlobal = (config.ageGenderModel != null);
                             config.faceMinThreshold = 100;
                             config.poseThreshold = new FacePassPose(30f, 30f, 30f);
@@ -342,6 +351,12 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
                             Log.d(TAG, "start to new FacePassHandler");
                             mFacePassHandler = new FacePassHandler(config);
                             Log.d(TAG, "FacePassHandler:" + mFacePassHandler);
+//                            if (CfgApp.isSmdt()) {  //双目
+//                                if (null != mFacePassHandler) {
+//                                    //设置双目图片配准参数
+//                                    mFacePassHandler.setIRConfig(1.0080858, -10.823608, 1.0267266, 31.87337, .5);
+//                                }
+//                            }
                             /* 更新入库阈值 */
                             FacePassConfig addFaceConfig = mFacePassHandler.getAddFaceConfig();
                             addFaceConfig.blurThreshold = 0.6f;
