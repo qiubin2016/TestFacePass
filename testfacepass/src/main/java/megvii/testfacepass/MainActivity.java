@@ -238,6 +238,10 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
     private Button mSDKModeBtn;
     int mId = 0;
 
+    private long mFeedFrameTime = 0;
+    private long mRecognizeStartTime = 0;
+    private long mRecognizeTime = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -340,7 +344,7 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
                             config.highBrightnessThreshold = 210f;
                             config.brightnessSTDThreshold = 60f;
 //                            config.retryCount = 100;
-                            config.retryCount = 2;
+                            config.retryCount = 5;
                             config.smileEnabled = false;
                             config.maxFaceEnabled = true;
 
@@ -455,6 +459,7 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
 
                 FacePassImage image;
                 try {
+                    Log.d(TAG, "cameraRotation:" + cameraRotation);
                     image = new FacePassImage(cameraPreviewData.nv21Data, cameraPreviewData.width, cameraPreviewData.height, cameraRotation, FacePassImageType.NV21);
                 } catch (FacePassException e) {
                     e.printStackTrace();
@@ -480,6 +485,7 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
                         }
                     });
                 } else {
+                    Log.d("FeedFrameThread", "feedFrame success!");
                     /* 将识别到的人脸在预览界面中圈出，并在上方显示人脸位置及角度信息 */
                     final FacePassFace[] bufferFaceList = detectionResult.faceList;
                     runOnUiThread(new Runnable() {
@@ -550,6 +556,9 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
                 } else {
                     /*离线模式，将识别到人脸的，message不为空的result添加到处理队列中*/
                     if (detectionResult != null && detectionResult.message.length != 0) {
+                        Log.d("FeedFrameThread", "mDetectResultQueue.offer");
+                        mRecognizeStartTime = System.currentTimeMillis();
+                        mFeedFrameTime = mRecognizeStartTime - startTime;  //time
                         boolean result = mDetectResultQueue.offer(detectionResult.message);
                         Log.d(DEBUG_TAG, "mDetectResultQueue.offer:" + result);
                     }
@@ -612,7 +621,10 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
                                 }
                                 int idx = findidx(ageGenderResult, result.trackId);
                                 if (idx == -1) {
+                                    long recognizeEndTime = System.currentTimeMillis();
+                                    mRecognizeTime = recognizeEndTime - mRecognizeStartTime;  //time
                                     Log.d("test1", "================4");
+                                    Log.d("RecognizeThread", "feedframe time:" + mFeedFrameTime + ",recognize time:" + mRecognizeTime);
                                     showRecognizeResult(result.trackId, result.detail.searchScore, result.detail.livenessScore, !TextUtils.isEmpty(faceToken));
                                 }
                                 else {
