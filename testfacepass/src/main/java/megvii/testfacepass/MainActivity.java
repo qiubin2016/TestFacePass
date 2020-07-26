@@ -187,8 +187,8 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
      */
     private int cameraRotation;
 
-    private static final int cameraWidth = 1280;
-    private static final int cameraHeight = 720;
+    private static final int cameraWidth = 640;//1280;
+    private static final int cameraHeight = 480;//720;
 
     private int mSecretNumber = 0;
     private static final long CLICK_INTERVAL = 600;
@@ -282,7 +282,7 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
     private void initFacePassSDK() {
         FacePassHandler.getAuth(authIP, apiKey, apiSecret);
         FacePassHandler.initSDK(getApplicationContext());
-        Log.d("FacePassDemo", FacePassHandler.getVersion());
+        Log.d(TAG, FacePassHandler.getVersion());
         Log.d(TAG, "initSDK is available:" + FacePassHandler.isAvailable());
         Log.d(TAG, "is Authorized:" + FacePassHandler.isAuthorized());
         Log.d(TAG, "SDK_MODE:" + SDK_MODE);
@@ -345,6 +345,14 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
                             FacePassConfig addFaceConfig = mFacePassHandler.getAddFaceConfig();
                             addFaceConfig.blurThreshold = 0.6f;
                             addFaceConfig.faceMinThreshold = 100;
+
+                            addFaceConfig.faceMinThreshold = 100;
+                            addFaceConfig.blurThreshold = 0.7f;
+                            addFaceConfig.brightnessSTDThreshold = 80f;
+                            addFaceConfig.lowBrightnessThreshold = 70f;
+                            addFaceConfig.highBrightnessThreshold = 210f;
+                            addFaceConfig.poseThreshold = new FacePassPose(30f, 30f, 30f);
+
                             mFacePassHandler.setAddFaceConfig(addFaceConfig);
 
                             checkGroup();
@@ -1396,6 +1404,12 @@ public class MainActivity extends Activity implements CameraManager.CameraListen
                             toast("quality problem！");
                         }
                     }
+                    Log.e("addface", "ret:" + result.result + ",blur:" + result.blur + ",brightness:" + result.brightness + ",deviation:" + result.deviation + ",pitch:" + result.pose.pitch
+                            + ",roll:" + result.pose.roll + ",yaw:" + result.pose.yaw + ",left:" + result.facePassRect.left + ",right:" + result.facePassRect.right
+                            + ",top:" + result.facePassRect.top + ",bottom:" + result.facePassRect.bottom);
+                    int width = result.facePassRect.right - result.facePassRect.left;
+                    int height = result.facePassRect.bottom - result.facePassRect.top;
+                    Log.e("addface", "face:" + width + "x" + height);
                 } catch (FacePassException e) {
                     e.printStackTrace();
                     toast(e.getMessage());

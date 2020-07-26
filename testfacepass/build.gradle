@@ -5,7 +5,7 @@ android {
     buildToolsVersion "25.0.2"
 
     defaultConfig {
-        applicationId "megvii.testfacepass"
+        applicationId "megvii.testfacepass_v360_0699"
         minSdkVersion 16
         targetSdkVersion 25
         versionCode 1
